@@ -77,11 +77,6 @@ uint32_t lastInteraction = 0;
 #ifdef OLED_EN
 #include <Wire.h>
 // i2c scanner: https://playground.arduino.cc/Main/I2cScanner
-#define OLED_ADDRESS 0x3C          // i2c address on most small OLEDs
-#define OLED_REFRESH_INTERVAL 200  // ms
-U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);
-byte OLED_found = false;
-#endif
 //***********************************************************************************************************
 #define TOUCH_N 8
 #define TOUCH_U 9
@@ -127,21 +122,6 @@ void setup() {
   tone(BUZZER, NOTE_C6); delay(400);
   noTone(BUZZER);
 */
-#ifdef OLED_EN
-    Wire.begin();
-    Wire.beginTransmission(OLED_ADDRESS);
-    byte error = Wire.endTransmission();
-    if (error == 0) {
-        SerialUSB.print("OLED FOUND at ");
-        SerialUSB.println(OLED_ADDRESS);
-        u8g2.begin();
-        // u8g2.setDisplayRotation(U8G2_R2); //if required (inside/custom
-        // mount?)
-        u8g2.setBusClock(1000000);  // 1Mhz i2C clock
-        OLED_found = true;
-    } else
-        SerialUSB.println("NO OLED attached...");
-#endif
 
     pinMode(A0, OUTPUT);  // DAC/GNDISO
     pinMode(SENSE_OUTPUT, INPUT);
@@ -179,27 +159,6 @@ void setup() {
     //               - offset is 12bit 2s complement format (p896)
 #endif
 
-    if (OLED_found && !calibrationPerformed && MA_PRESSED) {
-        u8g2.clearBuffer();
-        SerialUSB.println("ADC calib. values:");
-        SerialUSB.print("Offset=");
-        SerialUSB.println(offsetCorrectionValue);
-        SerialUSB.print("Gain=");
-        SerialUSB.println(gainCorrectionValue);
-        u8g2.setFont(u8g2_font_9x15B_tf);
-        u8g2.setCursor(0, 28);
-        u8g2.print("ADC CALIB:");
-        u8g2.setCursor(0, 40);
-        u8g2.print("offset:");
-        u8g2.setCursor(64, 40);
-        u8g2.print(offsetCorrectionValue);
-        u8g2.setCursor(0, 54);
-        u8g2.print("gain  :");
-        u8g2.setCursor(64, 54);
-        u8g2.print(gainCorrectionValue);
-        u8g2.sendBuffer();
-        delay(2000);
-    }
 #endif
 
     // BT check
@@ -311,7 +270,6 @@ void loop() {
     Serial.print(VOUT);
     Serial.print("E");
     Serial.println(RANGE_NA ? -9 : RANGE_UA ? -6 : -3);
-}
 }
 
 uint32_t buttonLastChange_range;
@@ -542,14 +500,6 @@ void adcCorrectionCheck() {
     gainCorrectionValue = eeprom_ADCgain.read();
 
     if (offsetCorrectionValue == 0 && gainCorrectionValue == 0) {
-        if (OLED_found) {
-            u8g2.clearBuffer();
-            u8g2.setFont(u8g2_font_9x15B_tf);
-            u8g2.setCursor(0, 12);
-            u8g2.print("ADC CALIB...");
-            u8g2.sendBuffer();
-        }
-        delay(1000);
         SerialUSB.println("Starting ADC Calibration...");
         gainCorrectionValue = ADC_UNITY_GAIN;
         calibrateADC();
@@ -656,29 +606,6 @@ void calibrateADC() {
     eeprom_ADCoffset.write(offsetCorrectionValue);
     eeprom_ADCgain.write(gainCorrectionValue);
 
-    if (OLED_found) {
-        u8g2.clearBuffer();
-        SerialUSB.println("ADC Calib done. Values:");
-        SerialUSB.print("Offset=");
-        SerialUSB.println(offsetCorrectionValue);
-        SerialUSB.print("Gain=");
-        SerialUSB.println(gainCorrectionValue);
-        u8g2.setFont(u8g2_font_9x15B_tf);
-        u8g2.setCursor(0, 12);
-        u8g2.print("ADC CALIB...");
-        u8g2.setCursor(0, 28);
-        u8g2.print("DONE:");
-        u8g2.setCursor(0, 40);
-        u8g2.print("offset:");
-        u8g2.setCursor(64, 40);
-        u8g2.print(offsetCorrectionValue);
-        u8g2.setCursor(0, 54);
-        u8g2.print("gain  :");
-        u8g2.setCursor(64, 54);
-        u8g2.print(gainCorrectionValue);
-        u8g2.sendBuffer();
-        delay(3000);
-    }
 }
 
 uint16_t readGndLevel() {
