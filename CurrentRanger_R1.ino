@@ -112,6 +112,7 @@ int offsetCorrectionValue = 0;
 uint16_t gainCorrectionValue = 0;
 byte calibrationPerformed = false;
 byte BT_found = true;
+void adcCorrectionCheck();
 
 void setup() {
     SerialUSB.begin(1);  // USB hyper speed, baud wont matter
