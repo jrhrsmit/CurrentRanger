@@ -37,7 +37,7 @@ uint32_t lastInteraction = 0;
 #define SENSE_OUTPUT A3
 #define SENSE_GNDISO A2
 #define SENSE_VIN A5
-#define ADCREADINGS 10  // do averaging in hardware rather than software
+#define ADCREADINGS 1  // do averaging in hardware rather than software
 #define VBATREADLOOPS \
     100  // read vbat every this many OLED_REFRESH_INTERVAL loops
 #define LOBAT_THRESHOLD 3.40  // volts
