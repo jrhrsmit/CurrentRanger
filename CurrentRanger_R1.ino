@@ -74,7 +74,6 @@ uint32_t lastInteraction = 0;
 #define RANGE_SWITCH_THRESHOLD_HIGH ADC_OVERLOAD  // ADC's 12bit value
 #define RANGE_SWITCH_THRESHOLD_LOW 0
 //***********************************************************************************************************
-#ifdef OLED_EN
 #include <Wire.h>
 // i2c scanner: https://playground.arduino.cc/Main/I2cScanner
 //***********************************************************************************************************
@@ -252,17 +251,21 @@ void loop() {
         if (RANGE_MA) {
             rangeUA();
             rangeBeep(SWITCHDELAY_DOWN);
+            readVOUT();
         } else if (RANGE_UA) {
             rangeNA();
             rangeBeep(SWITCHDELAY_DOWN);
+            readVOUT();
         }
     } else if (readDiff >= RANGE_SWITCH_THRESHOLD_HIGH) {
         if (RANGE_NA) {
             rangeUA();
             rangeBeep(SWITCHDELAY_UP);
+            readVOUT();
         } else if (RANGE_UA) {
             rangeMA();
             rangeBeep(SWITCHDELAY_UP);
+            readVOUT();
         }
     }
     float VOUT = ((readDiff) / 4096.0) * LDO_OUTPUT * 1000 *
